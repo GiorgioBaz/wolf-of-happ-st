@@ -24,6 +24,7 @@
         "dotenv": "^16.0.3",
         "express": "^4.18.2",
         "fast-csv": "^4.3.6",
+        "moment-business-days": "^1.2.0",
         "mongoose": "^6.9.0",
         "nodemon": "^2.0.20",
         "yahoo-finance2": "^2.3.10"
