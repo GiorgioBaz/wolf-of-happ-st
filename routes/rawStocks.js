@@ -49,17 +49,24 @@ app.get("/allStocksPM", async function (req, res) {
 });
 
 app.get("/gainers", async function (req, res) {
-    const cleanedData = await getCleanedStockData(false, true);
+    // const cleanedData = await getCleanedStockData(false, true);
+    const cleanedData = await yahooFinance.quote("FSA.AX");
     res.send(cleanedData);
 });
 
 app.get("/losers", async function (req, res) {
-    const cleanedData = await getCleanedStockData();
-    res.send(cleanedData);
+    try {
+        const cleanedData = await getCleanedStockData();
+        res.send(cleanedData);
+    } catch (error) {
+        console.log(error);
+        res.send(error);
+    }
 });
 
 app.get("/consecutiveGainers", async function (req, res) {
     //check historical data for the last 8 days and store that in an array in mongodb :)
+    const numConsecutiveDays = req.query.numConsecutiveDays;
     const gainers = await getCleanedStockData(false, true);
 
     function isConsecutiveGainer(quotes) {
@@ -79,26 +86,31 @@ app.get("/consecutiveGainers", async function (req, res) {
         }
         return !consecutiveGainers.some((gainer) => !gainer); // resolves as true if there is a single "false" entry in the array - but once we add ! it resolves as false which is the desired outcome as if there is a false that means at one point the stock wasnt gaining
     }
+    try {
+        const historicalData = await Promise.all(
+            gainers.map(async (gainer) => {
+                const data = await getHistoricalData(
+                    gainer,
+                    getDateXDaysAgo(numConsecutiveDays),
+                    today
+                );
+                if (isConsecutiveGainer(data)) {
+                    return gainer;
+                }
+            })
+        );
+        const consecutiveGainers = historicalData.filter((gainer) => gainer);
 
-    const historicalData = await Promise.all(
-        gainers.map(async (gainer) => {
-            const data = await getHistoricalData(
-                gainer,
-                getDateXDaysAgo(13),
-                today
-            );
-            if (isConsecutiveGainer(data)) {
-                return gainer;
-            }
-        })
-    );
-    const consecutiveGainers = historicalData.filter((gainer) => gainer);
-
-    res.send(consecutiveGainers);
+        res.send(consecutiveGainers);
+    } catch (err) {
+        // console.error(err);
+        res.send("Please wait before requesting more data");
+    }
 });
 
 app.get("/consecutiveLosers", async function (req, res) {
     //check historical data for the last 8 days and store that in an array in mongodb :)
+    const numConsecutiveDays = req.query.numConsecutiveDays;
     const losers = await getCleanedStockData();
 
     function isConsecutiveLoser(quotes) {
@@ -118,22 +130,26 @@ app.get("/consecutiveLosers", async function (req, res) {
         }
         return !consecutiveLosers.some((loser) => !loser);
     }
+    try {
+        const historicalData = await Promise.all(
+            losers.map(async (loser) => {
+                const data = await getHistoricalData(
+                    loser,
+                    getDateXDaysAgo(numConsecutiveDays),
+                    today
+                );
+                if (isConsecutiveLoser(data)) {
+                    return loser;
+                }
+            })
+        );
+        const consecutiveLosers = historicalData.filter((loser) => loser);
 
-    const historicalData = await Promise.all(
-        losers.map(async (loser) => {
-            const data = await getHistoricalData(
-                loser,
-                getDateXDaysAgo(7),
-                today
-            );
-            if (isConsecutiveLoser(data)) {
-                return loser;
-            }
-        })
-    );
-    const consecutiveLosers = historicalData.filter((loser) => loser);
-
-    res.send(consecutiveLosers);
+        res.send(consecutiveLosers);
+    } catch (err) {
+        // console.error(err);
+        res.send("Please wait before requesting more data");
+    }
 });
 
 module.exports = app;

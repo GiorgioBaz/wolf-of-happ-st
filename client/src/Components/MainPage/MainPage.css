@@ -1,0 +1,36 @@
+.stockTypeButtons {
+    display: flex;
+    margin-right: 1em;
+}
+
+.stocks {
+    display: flex;
+    justify-content: center;
+    margin-top: 1em;
+}
+.numConsecutiveDays {
+    width: fit-content;
+    height: fit-content;
+    text-align: center;
+}
+
+#stocksForm {
+    text-align: center;
+}
+
+.submitBtn {
+    margin-top: 1em;
+    cursor: pointer;
+}
+
+.consecutiveDaysDiv {
+    display: flex;
+    align-items: center;
+}
+
+.error {
+    color: red;
+    text-align: center;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
