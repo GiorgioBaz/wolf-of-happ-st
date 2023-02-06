@@ -1,7 +1,9 @@
 import Axios from "axios";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Swal from "sweetalert2";
 
 import "./MainPage.css";
+import showLoading from "../../showLoading";
 
 function MainPage() {
     const [stockType, setStockType] = useState("gainers");
@@ -9,6 +11,7 @@ function MainPage() {
     const [losers, setLosers] = useState([]);
     const [gainers, setGainers] = useState([]);
     const [errorMsg, setErrorMsg] = useState("");
+    const [loading, setLoading] = useState(false);
 
     function handleStockTypeChange(e) {
         setStockType(e.target.value);
@@ -17,6 +20,10 @@ function MainPage() {
     function handleConsecutiveDaysChange(e) {
         setNumConsecutiveDays(e.target.value);
     }
+
+    useEffect(() => {
+        showLoading(loading);
+    }, [loading]);
 
     async function handleSubmit(e) {
         e.preventDefault();
@@ -27,23 +34,29 @@ function MainPage() {
             },
         };
         if (stockType === "gainers") {
+            setLoading(true);
             const gainers = await Axios.get(
                 "http://localhost:5000/stocks/consecutiveGainers",
                 config
             );
             if (typeof gainers.data === "string") {
+                setLoading(false);
                 setErrorMsg(gainers.data);
             } else {
+                setLoading(false);
                 setGainers(gainers.data);
             }
         } else {
+            setLoading(true);
             const losers = await Axios.get(
                 "http://localhost:5000/stocks/consecutiveLosers",
                 config
             );
             if (typeof losers.data === "string") {
+                setLoading(false);
                 setErrorMsg(losers.data);
             } else {
+                setLoading(false);
                 setLosers(losers.data);
             }
         }
@@ -95,24 +108,23 @@ function MainPage() {
             {errorMsg && <p className="error">{errorMsg}</p>}
 
             <div className="results">
+                {gainers.length !== 0 && (
+                    <div className="gainersResults">
+                        <ul className="gainersUl">
+                            {gainers.map((gainer, i) => (
+                                <li className="gainerTicker" key={i}>
+                                    {gainer}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
                 {losers.length !== 0 && (
                     <div className="losersResults">
                         <ul className="losersUl">
                             {losers.map((loser, i) => (
                                 <li className="loserTicker" key={i}>
                                     {loser}
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                )}
-
-                {gainers.length !== 0 && (
-                    <div className="gainersResults">
-                        <ul className="gainersUl">
-                            {gainers.map((gainer, i) => (
-                                <li className="gainersTicker" key={i}>
-                                    {gainer}
                                 </li>
                             ))}
                         </ul>

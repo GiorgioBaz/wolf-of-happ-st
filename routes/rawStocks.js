@@ -49,8 +49,9 @@ app.get("/allStocksPM", async function (req, res) {
 });
 
 app.get("/gainers", async function (req, res) {
-    // const cleanedData = await getCleanedStockData(false, true);
-    const cleanedData = await yahooFinance.quote("FSA.AX");
+    const cleanedData = await getCleanedStockData(false, true);
+    //We need to figure out WTF IS GOING ON WITH THE TICKERS FOR AU
+    // const cleanedData = await yahooFinance.quote("FSA.AX");
     res.send(cleanedData);
 });
 
