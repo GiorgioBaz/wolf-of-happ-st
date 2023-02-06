@@ -1,6 +1,5 @@
 import Axios from "axios";
 import { useState, useEffect } from "react";
-import Swal from "sweetalert2";
 
 import "./MainPage.css";
 import showLoading from "../../showLoading";
@@ -93,7 +92,11 @@ function MainPage() {
                     <div className="consecutiveDaysDiv">
                         <p>Number Of Consecutive Days:</p>
                         <input
-                            className="numConsecutiveDays"
+                            className={
+                                stockType === "gainers"
+                                    ? "numConsecutiveDays green"
+                                    : "numConsecutiveDays red"
+                            }
                             onChange={handleConsecutiveDaysChange}
                             value={numConsecutiveDays}
                         ></input>
