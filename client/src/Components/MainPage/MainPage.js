@@ -6,18 +6,30 @@ import showLoading from "../../showLoading";
 
 function MainPage() {
     const [stockType, setStockType] = useState("gainers");
-    const [numConsecutiveDays, setNumConsecutiveDays] = useState(1);
+    const [numConsecutiveDays, setNumConsecutiveDays] = useState(0);
+    const [numConsecutiveWeeks, setNumConsecutiveWeeks] = useState(0);
+    const [interval, setInterval] = useState("1d");
     const [losers, setLosers] = useState([]);
     const [gainers, setGainers] = useState([]);
     const [errorMsg, setErrorMsg] = useState("");
     const [loading, setLoading] = useState(false);
 
+    const isDays = interval === "1d";
+
     function handleStockTypeChange(e) {
         setStockType(e.target.value);
     }
 
-    function handleConsecutiveDaysChange(e) {
-        setNumConsecutiveDays(e.target.value);
+    function handleIntervalChange(e) {
+        setInterval(e.target.value);
+    }
+
+    function handleConsecutiveInputChange(e) {
+        if (isDays) {
+            setNumConsecutiveDays(e.target.value);
+        } else {
+            setNumConsecutiveWeeks(e.target.value);
+        }
     }
 
     useEffect(() => {
@@ -30,6 +42,8 @@ function MainPage() {
         const config = {
             params: {
                 numConsecutiveDays,
+                interval,
+                numConsecutiveWeeks,
             },
         };
         if (stockType === "gainers") {
@@ -89,18 +103,30 @@ function MainPage() {
                             <label htmlFor="losersInput">Losers</label>
                         </div>
                     </div>
-                    <div className="consecutiveDaysDiv">
-                        <p>Number Of Consecutive Days:</p>
-                        <input
-                            className={
-                                stockType === "gainers"
-                                    ? "numConsecutiveDays green"
-                                    : "numConsecutiveDays red"
-                            }
-                            onChange={handleConsecutiveDaysChange}
-                            value={numConsecutiveDays}
-                        ></input>
+                    <div className="intervalDiv">
+                        <label htmlFor="interval">Interval:</label>
+                        <select
+                            className="interval"
+                            value={interval}
+                            onChange={handleIntervalChange}
+                        >
+                            <option value={"1d"}>Daily</option>
+                            <option value={"1wk"}>Weekly</option>
+                        </select>
                     </div>
+
+                    <p>Number Of Consecutive {isDays ? "Days:" : "Weeks:"}</p>
+                    <input
+                        className={
+                            stockType === "gainers"
+                                ? "numConsecutiveInput green"
+                                : "numConsecutiveInput red"
+                        }
+                        onChange={handleConsecutiveInputChange}
+                        value={
+                            isDays ? numConsecutiveDays : numConsecutiveWeeks
+                        }
+                    ></input>
                 </div>
 
                 <button className="submitBtn" type="submit">
