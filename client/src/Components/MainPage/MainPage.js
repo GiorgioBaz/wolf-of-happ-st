@@ -13,6 +13,7 @@ function MainPage() {
     const [gainers, setGainers] = useState([]);
     const [errorMsg, setErrorMsg] = useState("");
     const [loading, setLoading] = useState(false);
+    const [isDisabled, setIsDisabled] = useState(true);
 
     const isDays = interval === "1d";
 
@@ -25,9 +26,12 @@ function MainPage() {
     }
 
     function handleConsecutiveInputChange(e) {
+        setIsDisabled(false);
         if (isDays) {
+            setNumConsecutiveWeeks(0);
             setNumConsecutiveDays(e.target.value);
         } else {
+            setNumConsecutiveDays(0);
             setNumConsecutiveWeeks(e.target.value);
         }
     }
@@ -129,7 +133,11 @@ function MainPage() {
                     ></input>
                 </div>
 
-                <button className="submitBtn" type="submit">
+                <button
+                    disabled={isDisabled ? true : false}
+                    className="submitBtn"
+                    type="submit"
+                >
                     Retrieve
                 </button>
             </form>

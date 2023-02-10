@@ -73,13 +73,14 @@ app.get("/consecutiveGainers", async function (req, res) {
     const { numConsecutiveDays, interval, numConsecutiveWeeks } = req.query;
     const daysOrWeeksValue =
         numConsecutiveDays != 0 ? numConsecutiveDays : numConsecutiveWeeks;
-
     const isWeeks = numConsecutiveDays != 0 ? false : true;
+    const useDaysValue = !isWeeks ? daysOrWeeksValue : null;
+
     const gainers = await getCleanedStockData(false, true);
 
     function isConsecutiveGainer(quotes, weekly) {
         const consecutiveGainers = [];
-        if (quotes.length === 1) return false;
+        if (quotes.length <= 1) return false;
         for (let i = 0; i < quotes.length; i++) {
             if (i + 1 === quotes.length) {
                 if (quotes[i - 1].close - quotes[i].close < 0) {
@@ -108,7 +109,7 @@ app.get("/consecutiveGainers", async function (req, res) {
             gainers.map(async (gainer) => {
                 const data = await getHistoricalData(
                     gainer,
-                    getDateXDaysAgo(null, daysOrWeeksValue),
+                    getDateXDaysAgo(useDaysValue, daysOrWeeksValue),
                     today,
                     interval
                 );
@@ -130,13 +131,14 @@ app.get("/consecutiveLosers", async function (req, res) {
     const { numConsecutiveDays, interval, numConsecutiveWeeks } = req.query;
     const daysOrWeeksValue =
         numConsecutiveDays != 0 ? numConsecutiveDays : numConsecutiveWeeks;
-
     const isWeeks = numConsecutiveDays != 0 ? false : true;
+    const useDaysValue = !isWeeks ? daysOrWeeksValue : null;
+
     const losers = await getCleanedStockData();
 
     function isConsecutiveLoser(quotes, weekly) {
         const consecutiveLosers = [];
-        if (quotes.length === 1) return false;
+        if (quotes.length <= 1) return false;
         for (let i = 0; i < quotes.length; i++) {
             if (i + 1 === quotes.length) {
                 if (quotes[i - 1].close - quotes[i].close > 0) {
@@ -165,7 +167,7 @@ app.get("/consecutiveLosers", async function (req, res) {
             losers.map(async (loser) => {
                 const data = await getHistoricalData(
                     loser,
-                    getDateXDaysAgo(null, daysOrWeeksValue),
+                    getDateXDaysAgo(useDaysValue, daysOrWeeksValue),
                     today,
                     interval
                 );
