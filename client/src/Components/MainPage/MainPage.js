@@ -14,6 +14,7 @@ function MainPage() {
     const [errorMsg, setErrorMsg] = useState("");
     const [loading, setLoading] = useState(false);
     const [isDisabled, setIsDisabled] = useState(true);
+    const [hasSubmittedForm, setHasSubmittedForm] = useState(false);
 
     const isDays = interval === "1d";
 
@@ -37,6 +38,7 @@ function MainPage() {
     }
 
     useEffect(() => {
+        setHasSubmittedForm(true);
         showLoading(loading);
     }, [loading]);
 
@@ -156,6 +158,14 @@ function MainPage() {
                         </ul>
                     </div>
                 )}
+                {gainers.length === 0 && !errorMsg && !hasSubmittedForm && (
+                    <p>
+                        No gainers for{" "}
+                        {isDays ? numConsecutiveDays : numConsecutiveWeeks}{" "}
+                        consecutive {isDays ? "days" : "weeks"}
+                    </p>
+                )}
+
                 {losers.length !== 0 && (
                     <div className="losersResults">
                         <ul className="losersUl">
@@ -166,6 +176,13 @@ function MainPage() {
                             ))}
                         </ul>
                     </div>
+                )}
+                {losers.length === 0 && !errorMsg && !hasSubmittedForm && (
+                    <p>
+                        No losers for{" "}
+                        {isDays ? numConsecutiveDays : numConsecutiveWeeks}{" "}
+                        consecutive {isDays ? "days" : "weeks"}
+                    </p>
                 )}
             </div>
         </div>

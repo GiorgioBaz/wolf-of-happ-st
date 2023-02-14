@@ -99,7 +99,7 @@ app.get("/consecutiveGainers", async function (req, res) {
             consecutiveGainers.length - 1
                 ? true
                 : false;
-        if (weekly && isLastElemFalse && moment(today).isBusinessDay()) {
+        if (weekly && moment(today).isBusinessDay() && isLastElemFalse) {
             return true;
         }
         return !consecutiveGainers.some((gainer) => !gainer); // resolves as true if there is a single "false" entry in the array - but once we add ! it resolves as false which is the desired outcome as if there is a false that means at one point the stock wasnt gaining
@@ -157,7 +157,7 @@ app.get("/consecutiveLosers", async function (req, res) {
             consecutiveLosers.length - 1
                 ? true
                 : false;
-        if (weekly && isLastElemFalse && moment(today).isBusinessDay()) {
+        if (weekly && moment(today).isBusinessDay() && isLastElemFalse) {
             return true;
         }
         return !consecutiveLosers.some((loser) => !loser);
