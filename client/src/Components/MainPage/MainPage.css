@@ -124,3 +124,33 @@
     margin-left: 0.5em;
     cursor: pointer;
 }
+
+.stockBatches {
+    margin-top: 2em;
+}
+
+.batch2 {
+    margin-left: 0.5em;
+}
+
+.batch1,
+.batch2 {
+    width: fit-content;
+    height: fit-content;
+    padding: 0.2em;
+    background: #8324fb;
+    border-radius: 4px;
+    border: none;
+    color: white;
+    font-weight: 600;
+    font-size: 1.125em;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+}
+
+.batch1:disabled,
+.batch2:disabled {
+    background: #00008b;
+    cursor: not-allowed;
+    font-size: 1em;
+}

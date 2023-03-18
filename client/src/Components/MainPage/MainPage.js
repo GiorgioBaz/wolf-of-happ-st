@@ -15,6 +15,13 @@ function MainPage() {
     const [loading, setLoading] = useState(false);
     const [isDisabled, setIsDisabled] = useState(true);
     const [hasSubmittedForm, setHasSubmittedForm] = useState(false);
+    const [numGainers, setNumGainers] = useState(0);
+    const [numLosers, setNumLosers] = useState(0);
+    const [batch, setBatch] = useState("");
+    const [disableBtn1, setDisableBtn1] = useState(false);
+    const [disableBtn2, setDisableBtn2] = useState(false);
+
+    // WE NEED TO ADD SOME FUNCTIONALITY TO STORE THE NUMBER OF RECORDS IN LOCALSTORAGE AND UPDATE IT IF ITS A DIFFERENT DAY THEN WHEN IT WAS FIRST CALLED
 
     const isDays = interval === "1d";
 
@@ -37,6 +44,26 @@ function MainPage() {
         }
     }
 
+    function handleBatchClick(e) {
+        setBatch(e.target.className);
+        e.target.className === "batch1"
+            ? setDisableBtn1(true)
+            : setDisableBtn2(true);
+    }
+
+    useEffect(() => {
+        async function getNumGainersAndLosers() {
+            setLoading(true);
+            const stocks = await Axios.get(
+                "http://localhost:5000/stocks/numGainersAndLosers"
+            );
+            setNumGainers(stocks.data.gainers);
+            setNumLosers(stocks.data.losers);
+            setLoading(false);
+        }
+        getNumGainersAndLosers();
+    }, []);
+
     useEffect(() => {
         setHasSubmittedForm(true);
         showLoading(loading);
@@ -50,20 +77,27 @@ function MainPage() {
                 numConsecutiveDays,
                 interval,
                 numConsecutiveWeeks,
+                batch,
             },
         };
         if (stockType === "gainers") {
             setLoading(true);
-            const gainers = await Axios.get(
+            const gainersRes = await Axios.get(
                 "http://localhost:5000/stocks/consecutiveGainers",
                 config
             );
-            if (typeof gainers.data === "string") {
+            if (typeof gainersRes.data === "string") {
                 setLoading(false);
-                setErrorMsg(gainers.data);
+                setErrorMsg(gainersRes.data);
+            } else if (!batch) {
+                setLoading(false);
+                setGainers(gainersRes.data);
             } else {
                 setLoading(false);
-                setGainers(gainers.data);
+                setGainers((prevGainers) => [
+                    ...prevGainers,
+                    ...gainersRes.data,
+                ]);
             }
         } else {
             setLoading(true);
@@ -74,9 +108,12 @@ function MainPage() {
             if (typeof losers.data === "string") {
                 setLoading(false);
                 setErrorMsg(losers.data);
-            } else {
+            } else if (!batch) {
                 setLoading(false);
                 setLosers(losers.data);
+            } else {
+                setLoading(false);
+                setLosers((prevLosers) => [...prevLosers, ...losers.data]);
             }
         }
     }
@@ -109,6 +146,27 @@ function MainPage() {
                             <label htmlFor="losersInput">Losers</label>
                         </div>
                     </div>
+                    {(numGainers > 50 || numLosers > 600) && (
+                        <div className="stockBatches">
+                            <button
+                                className="batch1"
+                                type="button"
+                                onClick={handleBatchClick}
+                                disabled={disableBtn1}
+                            >
+                                Batch 1
+                            </button>
+                            <button
+                                className="batch2"
+                                type="button"
+                                onClick={handleBatchClick}
+                                disabled={disableBtn2}
+                            >
+                                Batch 2
+                            </button>
+                        </div>
+                    )}
+
                     <div className="intervalDiv">
                         <label htmlFor="interval">Interval:</label>
                         <select

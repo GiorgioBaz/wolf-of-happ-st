@@ -47,6 +47,40 @@ function getDateXDaysAgo(daysAgo, weeksAgo) {
     }
 }
 
+function splitStockListIfToMany(batch, stocks) {
+    let batch1;
+    let batch2;
+    if (batch) {
+        batch1 = stocks.slice(0, stocks.length / 2);
+        batch2 = stocks.slice(stocks.length / 2, stocks.length);
+    }
+    return { batch1, batch2 };
+}
+
+async function calcConsecutiveStocks(
+    batch,
+    isConsecutiveCalc,
+    isWeeks,
+    useDaysValue,
+    daysOrWeeksValue,
+    interval
+) {
+    const historicalData = await Promise.all(
+        batch.map(async (loser) => {
+            const data = await getHistoricalData(
+                loser,
+                getDateXDaysAgo(useDaysValue, daysOrWeeksValue),
+                today,
+                interval
+            );
+            if (isConsecutiveCalc(data, isWeeks)) {
+                return loser;
+            }
+        })
+    );
+    return historicalData;
+}
+
 app.get("/allStocksPM", async function (req, res) {
     const cleanedData = await getCleanedStockData(true);
     res.send(cleanedData);
@@ -57,6 +91,12 @@ app.get("/gainers", async function (req, res) {
     //We need to figure out WTF IS GOING ON WITH THE TICKERS FOR AU
     // const cleanedData = await yahooFinance.quote("FSA.AX");
     res.send(cleanedData);
+});
+
+app.get("/numGainersAndLosers", async function (req, res) {
+    const gainers = await getCleanedStockData(false, true);
+    const losers = await getCleanedStockData();
+    res.send({ gainers: gainers.length, losers: losers.length });
 });
 
 app.get("/losers", async function (req, res) {
@@ -70,7 +110,8 @@ app.get("/losers", async function (req, res) {
 });
 
 app.get("/consecutiveGainers", async function (req, res) {
-    const { numConsecutiveDays, interval, numConsecutiveWeeks } = req.query;
+    const { numConsecutiveDays, interval, numConsecutiveWeeks, batch } =
+        req.query;
     const daysOrWeeksValue =
         numConsecutiveDays != 0 ? numConsecutiveDays : numConsecutiveWeeks;
     const isWeeks = numConsecutiveDays != 0 ? false : true;
@@ -82,6 +123,10 @@ app.get("/consecutiveGainers", async function (req, res) {
         const consecutiveGainers = [];
         if (quotes.length <= 1) return false;
         for (let i = 0; i < quotes.length; i++) {
+            if (!quotes[i].close) {
+                i += 1;
+                break;
+            }
             if (i + 1 === quotes.length) {
                 if (quotes[i - 1].close - quotes[i].close < 0) {
                     consecutiveGainers.push(true);
@@ -99,27 +144,46 @@ app.get("/consecutiveGainers", async function (req, res) {
             consecutiveGainers.length - 1
                 ? true
                 : false;
-        if (weekly && moment(today).isBusinessDay() && isLastElemFalse) {
+        if (weekly && today.getDay() !== 2 && isLastElemFalse) {
             return true;
         }
         return !consecutiveGainers.some((gainer) => !gainer); // resolves as true if there is a single "false" entry in the array - but once we add ! it resolves as false which is the desired outcome as if there is a false that means at one point the stock wasnt gaining
     }
-    try {
-        const historicalData = await Promise.all(
-            gainers.map(async (gainer) => {
-                const data = await getHistoricalData(
-                    gainer,
-                    getDateXDaysAgo(useDaysValue, daysOrWeeksValue),
-                    today,
-                    interval
-                );
-                if (isConsecutiveGainer(data, isWeeks)) {
-                    return gainer;
-                }
-            })
-        );
-        const consecutiveGainers = historicalData.filter((gainer) => gainer);
 
+    try {
+        let historicalData;
+        let batches = splitStockListIfToMany(batch, gainers);
+        let batch1 = batches.batch1;
+        let batch2 = batches.batch2;
+        if (batch === "batch1") {
+            historicalData = await calcConsecutiveStocks(
+                batch1,
+                isConsecutiveGainer,
+                isWeeks,
+                useDaysValue,
+                daysOrWeeksValue,
+                interval
+            );
+        } else if (batch === "batch2") {
+            historicalData = await calcConsecutiveStocks(
+                batch2,
+                isConsecutiveGainer,
+                isWeeks,
+                useDaysValue,
+                daysOrWeeksValue,
+                interval
+            );
+        } else {
+            historicalData = await calcConsecutiveStocks(
+                losers,
+                isConsecutiveGainer,
+                isWeeks,
+                useDaysValue,
+                daysOrWeeksValue,
+                interval
+            );
+        }
+        const consecutiveGainers = historicalData.filter((gainer) => gainer);
         res.send(consecutiveGainers);
     } catch (err) {
         console.error(err);
@@ -128,7 +192,8 @@ app.get("/consecutiveGainers", async function (req, res) {
 });
 
 app.get("/consecutiveLosers", async function (req, res) {
-    const { numConsecutiveDays, interval, numConsecutiveWeeks } = req.query;
+    const { numConsecutiveDays, interval, numConsecutiveWeeks, batch } =
+        req.query;
     const daysOrWeeksValue =
         numConsecutiveDays != 0 ? numConsecutiveDays : numConsecutiveWeeks;
     const isWeeks = numConsecutiveDays != 0 ? false : true;
@@ -140,6 +205,10 @@ app.get("/consecutiveLosers", async function (req, res) {
         const consecutiveLosers = [];
         if (quotes.length <= 1) return false;
         for (let i = 0; i < quotes.length; i++) {
+            if (!quotes[i].close) {
+                i += 1;
+                break;
+            }
             if (i + 1 === quotes.length) {
                 if (quotes[i - 1].close - quotes[i].close > 0) {
                     consecutiveLosers.push(true);
@@ -157,25 +226,45 @@ app.get("/consecutiveLosers", async function (req, res) {
             consecutiveLosers.length - 1
                 ? true
                 : false;
-        if (weekly && moment(today).isBusinessDay() && isLastElemFalse) {
+        if (weekly && today.getDay() !== 2 && isLastElemFalse) {
             return true;
         }
         return !consecutiveLosers.some((loser) => !loser);
     }
     try {
-        const historicalData = await Promise.all(
-            losers.map(async (loser) => {
-                const data = await getHistoricalData(
-                    loser,
-                    getDateXDaysAgo(useDaysValue, daysOrWeeksValue),
-                    today,
-                    interval
-                );
-                if (isConsecutiveLoser(data, isWeeks)) {
-                    return loser;
-                }
-            })
-        );
+        let historicalData;
+        let batches = splitStockListIfToMany(batch, losers);
+        let batch1 = batches.batch1;
+        let batch2 = batches.batch2;
+        if (batch === "batch1") {
+            historicalData = await calcConsecutiveStocks(
+                batch1,
+                isConsecutiveLoser,
+                isWeeks,
+                useDaysValue,
+                daysOrWeeksValue,
+                interval
+            );
+        } else if (batch === "batch2") {
+            historicalData = await calcConsecutiveStocks(
+                batch2,
+                isConsecutiveLoser,
+                isWeeks,
+                useDaysValue,
+                daysOrWeeksValue,
+                interval
+            );
+        } else {
+            historicalData = await calcConsecutiveStocks(
+                losers,
+                isConsecutiveLoser,
+                isWeeks,
+                useDaysValue,
+                daysOrWeeksValue,
+                interval
+            );
+        }
+
         const consecutiveLosers = historicalData.filter((loser) => loser);
 
         res.send(consecutiveLosers);
