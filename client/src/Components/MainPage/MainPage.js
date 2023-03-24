@@ -27,6 +27,8 @@ function MainPage() {
 
     function handleStockTypeChange(e) {
         setStockType(e.target.value);
+        setDisableBtn1(false);
+        setDisableBtn2(false);
     }
 
     function handleIntervalChange(e) {
@@ -146,7 +148,7 @@ function MainPage() {
                             <label htmlFor="losersInput">Losers</label>
                         </div>
                     </div>
-                    {(numGainers > 50 || numLosers > 600) && (
+                    {(numGainers > 600 || numLosers > 600) && (
                         <div className="stockBatches">
                             <button
                                 className="batch1"

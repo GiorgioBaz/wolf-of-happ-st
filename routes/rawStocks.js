@@ -175,7 +175,7 @@ app.get("/consecutiveGainers", async function (req, res) {
             );
         } else {
             historicalData = await calcConsecutiveStocks(
-                losers,
+                gainers,
                 isConsecutiveGainer,
                 isWeeks,
                 useDaysValue,
