@@ -222,7 +222,7 @@ app.get("/consecutiveLosers", async function (req, res) {
             }
         }
         const isLastElemFalse =
-            consecutiveLosers.findIndex((gainer) => !gainer) ===
+            consecutiveLosers.findIndex((loser) => !loser) ===
             consecutiveLosers.length - 1
                 ? true
                 : false;
