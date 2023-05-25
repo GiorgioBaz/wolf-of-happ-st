@@ -28,7 +28,7 @@
         "moment-business-days": "^1.2.0",
         "mongoose": "^6.9.0",
         "nodemon": "^2.0.20",
-        "yahoo-finance2": "^2.3.10"
+        "yahoo-finance2": "^2.4.1"
     },
     "devDependencies": {
         "concurrently": "^7.6.0"

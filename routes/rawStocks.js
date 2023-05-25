@@ -81,6 +81,14 @@ async function calcConsecutiveStocks(
     return historicalData;
 }
 
+// Experimental - untested
+function excludeStockTickers(excludedTickers, stockTickers) {
+    excludedTickers.forEach((ticker) => {
+        const excludedTickerIndex = stockTickers.findIndex(ticker);
+        excludedTickerIndex > -1 && stockTickers.splice(excludedTickerIndex);
+    });
+}
+
 app.get("/allStocksPM", async function (req, res) {
     const cleanedData = await getCleanedStockData(true);
     res.send(cleanedData);
