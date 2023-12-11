@@ -1,6 +1,5 @@
 const express = require("express");
 const app = express();
-const Stocks = require("../models/stocks");
 require("dotenv").config({ path: "../config.env" });
 const yahooFinance = require("yahoo-finance2").default;
 const moment = require("moment-business-days");

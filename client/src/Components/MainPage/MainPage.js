@@ -1,4 +1,3 @@
-import Axios from "axios";
 import { axiosInstance } from "../../config";
 import { useState, useEffect } from "react";
 
