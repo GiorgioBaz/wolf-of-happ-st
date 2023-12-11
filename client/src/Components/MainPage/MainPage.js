@@ -1,4 +1,5 @@
 import Axios from "axios";
+import { axiosInstance } from "../../config";
 import { useState, useEffect } from "react";
 
 import "./MainPage.css";
@@ -14,7 +15,8 @@ function MainPage() {
     const [errorMsg, setErrorMsg] = useState("");
     const [loading, setLoading] = useState(false);
     const [isDisabled, setIsDisabled] = useState(true);
-    const [hasSubmittedForm, setHasSubmittedForm] = useState(false);
+    const [hasSubmittedGainers, setHasSubmittedGainers] = useState(false);
+    const [hasSubmittedLosers, setHasSubmittedLosers] = useState(false);
     const [numGainers, setNumGainers] = useState(0);
     const [numLosers, setNumLosers] = useState(0);
     const [batch, setBatch] = useState("");
@@ -56,9 +58,11 @@ function MainPage() {
     useEffect(() => {
         async function getNumGainersAndLosers() {
             setLoading(true);
-            const stocks = await Axios.get(
-                "http://localhost:5000/stocks/numGainersAndLosers"
-            );
+            const stocks = await axiosInstance({
+                method: "GET",
+                withCredentials: true,
+                url: "/numGainersAndLosers",
+            });
             setNumGainers(stocks.data.gainers);
             setNumLosers(stocks.data.losers);
             setLoading(false);
@@ -67,7 +71,6 @@ function MainPage() {
     }, []);
 
     useEffect(() => {
-        setHasSubmittedForm(true);
         showLoading(loading);
     }, [loading]);
 
@@ -75,19 +78,26 @@ function MainPage() {
         e.preventDefault();
         setErrorMsg("");
         const config = {
-            params: {
-                numConsecutiveDays,
-                interval,
-                numConsecutiveWeeks,
-                batch,
-            },
+            numConsecutiveDays,
+            interval,
+            numConsecutiveWeeks,
+            batch,
         };
         if (stockType === "gainers") {
             setLoading(true);
-            const gainersRes = await Axios.get(
-                "http://localhost:5000/stocks/consecutiveGainers",
-                config
-            );
+            setHasSubmittedGainers(true);
+            const gainersRes = await axiosInstance({
+                method: "GET",
+                withCredentials: true,
+                url: "/consecutiveGainers",
+                params: config,
+            });
+
+            // await Axios.get(
+            //     "http://localhost:5000/stocks/consecutiveGainers",
+            //     config
+            // );
+
             if (typeof gainersRes.data === "string") {
                 setLoading(false);
                 setErrorMsg(gainersRes.data);
@@ -103,10 +113,19 @@ function MainPage() {
             }
         } else {
             setLoading(true);
-            const losers = await Axios.get(
-                "http://localhost:5000/stocks/consecutiveLosers",
-                config
-            );
+            setHasSubmittedLosers(true);
+            const losers = await axiosInstance({
+                method: "GET",
+                withCredentials: true,
+                url: "/consecutiveLosers",
+                params: config,
+            });
+
+            // Axios.get(
+            //     "http://localhost:5000/stocks/consecutiveLosers",
+            //     config
+            // );
+
             if (typeof losers.data === "string") {
                 setLoading(false);
                 setErrorMsg(losers.data);
@@ -218,7 +237,7 @@ function MainPage() {
                         </ul>
                     </div>
                 )}
-                {gainers.length === 0 && !errorMsg && !hasSubmittedForm && (
+                {gainers.length === 0 && !errorMsg && hasSubmittedGainers && (
                     <p>
                         No gainers for{" "}
                         {isDays ? numConsecutiveDays : numConsecutiveWeeks}{" "}
@@ -237,7 +256,7 @@ function MainPage() {
                         </ul>
                     </div>
                 )}
-                {losers.length === 0 && !errorMsg && !hasSubmittedForm && (
+                {losers.length === 0 && !errorMsg && hasSubmittedLosers && (
                     <p>
                         No losers for{" "}
                         {isDays ? numConsecutiveDays : numConsecutiveWeeks}{" "}
