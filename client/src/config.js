@@ -1,5 +1,5 @@
 import axios from "axios";
 
 export const axiosInstance = axios.create({
-    baseURL: "http://localhost:5000/stocks",
+    baseURL: "https://wolf-of-happ-st.onrender.com/stocks",
 });
