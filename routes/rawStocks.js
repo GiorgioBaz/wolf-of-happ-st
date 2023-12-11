@@ -6,6 +6,7 @@ const yahooFinance = require("yahoo-finance2").default;
 const moment = require("moment-business-days");
 
 const today = new Date();
+const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
 async function getCleanedStockData(all = false, gaining = false) {
     const stockTickers = await require("../StockTickers/topStocks");

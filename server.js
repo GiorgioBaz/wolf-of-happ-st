@@ -1,5 +1,4 @@
 const express = require("express");
-const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 require("dotenv").config({ path: "./config.env" });
@@ -16,15 +15,6 @@ app.use(
         credentials: true,
     })
 );
-
-// Since mongoose's Promise is deprecated, we override it with Node's Promise
-mongoose.Promise = global.Promise;
-
-// Connect to Mongo
-mongoose
-    .connect(process.env.DB, { useNewUrlParser: true })
-    .then(() => console.log("MongoDB Connected..."))
-    .catch((err) => console.log(err));
 
 app.use("/stocks", Stocks);
 
