@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 require("dotenv").config({ path: "./config.env" });
+const path = require("path");
 const port = process.env.PORT || 5000;
 const Stocks = require("./routes/rawStocks");
 
@@ -17,5 +18,10 @@ app.use(
 );
 
 app.use("/stocks", Stocks);
+
+app.use(express.static(path.resolve(__dirname, "./client/build")));
+app.get("*", function (request, response) {
+    response.sendFile(path.resolve(__dirname, "./client/build", "index.html"));
+});
 
 app.listen(port, () => console.log(`Server started on port ${port}`));
