@@ -22,8 +22,6 @@ function MainPage() {
     const [disableBtn1, setDisableBtn1] = useState(false);
     const [disableBtn2, setDisableBtn2] = useState(false);
 
-    // WE NEED TO ADD SOME FUNCTIONALITY TO STORE THE NUMBER OF RECORDS IN LOCALSTORAGE AND UPDATE IT IF ITS A DIFFERENT DAY THEN WHEN IT WAS FIRST CALLED
-
     const isDays = interval === "1d";
 
     function handleStockTypeChange(e) {
@@ -92,11 +90,6 @@ function MainPage() {
                 params: config,
             });
 
-            // await Axios.get(
-            //     "http://localhost:5000/stocks/consecutiveGainers",
-            //     config
-            // );
-
             if (typeof gainersRes.data === "string") {
                 setLoading(false);
                 setErrorMsg(gainersRes.data);
@@ -119,11 +112,6 @@ function MainPage() {
                 url: "/consecutiveLosers",
                 params: config,
             });
-
-            // Axios.get(
-            //     "http://localhost:5000/stocks/consecutiveLosers",
-            //     config
-            // );
 
             if (typeof losers.data === "string") {
                 setLoading(false);
