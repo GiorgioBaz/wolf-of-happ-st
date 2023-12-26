@@ -35,4 +35,4 @@ npm install
 npm start
 ``` 
 ## Contributions 
-Contributions are welcome! If you encounter any issues or have suggestions for improvement, feel free to [open an issue](https://github.com/GiorgioBaz/wolf-of-happ-st/issues) or submit a pull request. 
+Contributions are welcome! If you encounter any issues or have suggestions for improvement, feel free to [open an issue](https://github.com/GiorgioBaz/wolf-of-happ-st/issues).
