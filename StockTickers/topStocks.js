@@ -1,13 +1,16 @@
 const utils = require("./utils");
 
-async function allStocks() {
-    let allStocks = [];
+async function usStocks() {
     const usStocks = await utils("./StockTickers/CSV/Top1000USStocksbyMC.csv");
-    allStocks.push(...usStocks);
-    //TODO: Implement top 1000 AU stocks
-    // const auStocks = await utils("./StockTickers/CSV/Top1000AUStocksbyMC.csv");
-    // allStocks.push(...auStocks);
-    return allStocks;
+    return usStocks;
 }
 
-module.exports = allStocks();
+async function hkStocks() {
+    const hkStocks = await utils("./StockTickers/CSV/Top500HKStocksbyMC.csv");
+    return hkStocks;
+}
+
+module.exports = {
+    usStocks: usStocks(),
+    hkStocks: hkStocks(),
+};

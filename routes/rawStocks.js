@@ -3,12 +3,27 @@ const app = express();
 require("dotenv").config({ path: "../config.env" });
 const yahooFinance = require("yahoo-finance2").default;
 const moment = require("moment-business-days");
+const { usStocks, hkStocks } = require("../StockTickers/topStocks");
 
 const today = new Date();
 const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-async function getCleanedStockData(all = false, gaining = false) {
-    const stockTickers = await require("../StockTickers/topStocks");
+async function getCleanedStockData(
+    all = false,
+    gaining = false,
+    country = "US"
+) {
+    let stockTickers = [];
+
+    switch (country) {
+        case "US":
+            stockTickers = await usStocks;
+            break;
+        case "HK":
+            stockTickers = await hkStocks;
+            break;
+    }
+
     const stockData = await yahooFinance.quote(stockTickers);
     let cleanedStockData = stockData.map((stock) => {
         return {
@@ -118,14 +133,19 @@ app.get("/losers", async function (req, res) {
 });
 
 app.get("/consecutiveGainers", async function (req, res) {
-    const { numConsecutiveDays, interval, numConsecutiveWeeks, batch } =
-        req.query;
+    const {
+        numConsecutiveDays,
+        interval,
+        numConsecutiveWeeks,
+        batch,
+        country,
+    } = req.query;
     const daysOrWeeksValue =
         numConsecutiveDays != 0 ? numConsecutiveDays : numConsecutiveWeeks;
     const isWeeks = numConsecutiveDays != 0 ? false : true;
     const useDaysValue = !isWeeks ? daysOrWeeksValue : null;
 
-    const gainers = await getCleanedStockData(false, true);
+    const gainers = await getCleanedStockData(false, true, country);
 
     function isConsecutiveGainer(quotes, weekly) {
         const consecutiveGainers = [];
@@ -200,14 +220,19 @@ app.get("/consecutiveGainers", async function (req, res) {
 });
 
 app.get("/consecutiveLosers", async function (req, res) {
-    const { numConsecutiveDays, interval, numConsecutiveWeeks, batch } =
-        req.query;
+    const {
+        numConsecutiveDays,
+        interval,
+        numConsecutiveWeeks,
+        batch,
+        country,
+    } = req.query;
     const daysOrWeeksValue =
         numConsecutiveDays != 0 ? numConsecutiveDays : numConsecutiveWeeks;
     const isWeeks = numConsecutiveDays != 0 ? false : true;
     const useDaysValue = !isWeeks ? daysOrWeeksValue : null;
 
-    const losers = await getCleanedStockData();
+    const losers = await getCleanedStockData(false, false, country);
 
     function isConsecutiveLoser(quotes, weekly) {
         const consecutiveLosers = [];

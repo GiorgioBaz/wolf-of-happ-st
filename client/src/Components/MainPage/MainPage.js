@@ -5,6 +5,7 @@ import "./MainPage.css";
 import showLoading from "../../showLoading";
 
 function MainPage() {
+    const [country, setCountry] = useState("US");
     const [stockType, setStockType] = useState("gainers");
     const [numConsecutiveDays, setNumConsecutiveDays] = useState(0);
     const [numConsecutiveWeeks, setNumConsecutiveWeeks] = useState(0);
@@ -32,6 +33,18 @@ function MainPage() {
 
     function handleIntervalChange(e) {
         setInterval(e.target.value);
+    }
+
+    function handleCountryChange(e) {
+        if (country !== e.target.value) {
+            // Using hasSubmittedGainers & hasSubmittedUsers as a way to bypass the error logic on line 253 & 272
+            setHasSubmittedGainers(false);
+            setHasSubmittedLosers(false);
+
+            setGainers([]);
+            setLosers([]);
+        }
+        setCountry(e.target.value);
     }
 
     function handleConsecutiveInputChange(e) {
@@ -75,6 +88,7 @@ function MainPage() {
         e.preventDefault();
         setErrorMsg("");
         const config = {
+            country,
             numConsecutiveDays,
             interval,
             numConsecutiveWeeks,
@@ -129,6 +143,18 @@ function MainPage() {
         <div className="App">
             <form id="stocksForm" onSubmit={handleSubmit}>
                 <div className="stocks">
+                    <div className="countryDiv">
+                        <label htmlFor="country">Country:</label>
+                        <select
+                            className="country"
+                            value={country}
+                            onChange={handleCountryChange}
+                        >
+                            <option value={"US"}>United States</option>
+                            <option value={"HK"}>Hong Kong</option>
+                        </select>
+                    </div>
+
                     <div className="stockTypeButtons">
                         <div className="gainers">
                             <input
