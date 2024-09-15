@@ -4,6 +4,7 @@ require("dotenv").config({ path: "../config.env" });
 const yahooFinance = require("yahoo-finance2").default;
 const moment = require("moment-business-days");
 const { usStocks, hkStocks } = require("../StockTickers/topStocks");
+const convertToHistoricalResult = require("../utils/convertChartToHistorical.js");
 
 const today = new Date();
 const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -46,11 +47,15 @@ async function getCleanedStockData(
 }
 
 async function getHistoricalData(ticker, fromDate, toDate, interval) {
-    return await yahooFinance.historical(ticker, {
+    let historicalData = await yahooFinance.chart(ticker, {
         period1: fromDate,
         period2: toDate,
         interval,
     });
+
+    let formattedHistoricalData = convertToHistoricalResult(historicalData);
+
+    return formattedHistoricalData;
 }
 
 function getDateXDaysAgo(daysAgo, weeksAgo) {
