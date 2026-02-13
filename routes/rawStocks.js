@@ -1,7 +1,10 @@
 const express = require("express");
 const app = express();
 require("dotenv").config({ path: "../config.env" });
-const yahooFinance = require("yahoo-finance2").default;
+const YahooFinance = require("yahoo-finance2").default;
+const yahooFinance = new YahooFinance({
+    suppressNotices: ["yahooSurvey"],
+});
 const moment = require("moment-business-days");
 const { usStocks, hkStocks } = require("../StockTickers/topStocks");
 const convertToHistoricalResult = require("../utils/convertChartToHistorical.js");
@@ -12,7 +15,7 @@ const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
 async function getCleanedStockData(
     all = false,
     gaining = false,
-    country = "US"
+    country = "US",
 ) {
     let stockTickers = [];
 
@@ -83,7 +86,7 @@ async function calcConsecutiveStocks(
     isWeeks,
     useDaysValue,
     daysOrWeeksValue,
-    interval
+    interval,
 ) {
     const historicalData = await Promise.all(
         batch.map(async (loser) => {
@@ -91,12 +94,12 @@ async function calcConsecutiveStocks(
                 loser,
                 getDateXDaysAgo(useDaysValue, daysOrWeeksValue),
                 today,
-                interval
+                interval,
             );
             if (isConsecutiveCalc(data, isWeeks)) {
                 return loser;
             }
-        })
+        }),
     );
     return historicalData;
 }
@@ -195,7 +198,7 @@ app.get("/consecutiveGainers", async function (req, res) {
                 isWeeks,
                 useDaysValue,
                 daysOrWeeksValue,
-                interval
+                interval,
             );
         } else if (batch === "batch2") {
             historicalData = await calcConsecutiveStocks(
@@ -204,7 +207,7 @@ app.get("/consecutiveGainers", async function (req, res) {
                 isWeeks,
                 useDaysValue,
                 daysOrWeeksValue,
-                interval
+                interval,
             );
         } else {
             historicalData = await calcConsecutiveStocks(
@@ -213,7 +216,7 @@ app.get("/consecutiveGainers", async function (req, res) {
                 isWeeks,
                 useDaysValue,
                 daysOrWeeksValue,
-                interval
+                interval,
             );
         }
         const consecutiveGainers = historicalData.filter((gainer) => gainer);
@@ -281,7 +284,7 @@ app.get("/consecutiveLosers", async function (req, res) {
                 isWeeks,
                 useDaysValue,
                 daysOrWeeksValue,
-                interval
+                interval,
             );
         } else if (batch === "batch2") {
             historicalData = await calcConsecutiveStocks(
@@ -290,7 +293,7 @@ app.get("/consecutiveLosers", async function (req, res) {
                 isWeeks,
                 useDaysValue,
                 daysOrWeeksValue,
-                interval
+                interval,
             );
         } else {
             historicalData = await calcConsecutiveStocks(
@@ -299,7 +302,7 @@ app.get("/consecutiveLosers", async function (req, res) {
                 isWeeks,
                 useDaysValue,
                 daysOrWeeksValue,
-                interval
+                interval,
             );
         }
 
